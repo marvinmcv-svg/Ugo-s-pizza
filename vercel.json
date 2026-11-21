@@ -1,5 +1,9 @@
 {
   "functions": {
     "api/hermosia.js": { "maxDuration": 60 }
-  }
+  },
+  "headers": [
+    { "source": "/assets/ar/(.*).usdz", "headers": [{ "key": "Content-Type", "value": "model/vnd.usdz+zip" }, { "key": "Cache-Control", "value": "public, max-age=86400" }] },
+    { "source": "/assets/ar/(.*).glb", "headers": [{ "key": "Content-Type", "value": "model/gltf-binary" }, { "key": "Access-Control-Allow-Origin", "value": "*" }, { "key": "Cache-Control", "value": "public, max-age=86400" }] }
+  ]
 }

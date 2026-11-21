@@ -39,8 +39,9 @@ api/_prompt.js      system prompt + live context (time, open branches, promo, cu
 api/_persona.js     HermosIA's original lines + easter eggs
 tests/tools.test.js golden tests (node:test, fixed clock)
 js/ar.js            AR / 3D menu: tap a pizza photo → 3D viewer → "Ver en tu mesa" (real size, phone camera)
-assets/ar/*.glb     one real-size 3D model per pizza, built from the photos
-tools/build-ar-models.py   regenerates assets/ar/ (python3, pillow, numpy)
+assets/ar/*.glb|usdz  one real-size 3D model per pizza (GLB for Android/viewer, USDZ for iPhone)
+tools/build-ar-models.py   regenerates assets/ar/ (python3, pillow, numpy, usd-core)
+tools/ar-src/       full-size menu photos from ugospizzas.com/menu (model source)
 assets/img|video|hero|brand   the shop's own photos and reels, processed (webp / H.264)
 ```
 
@@ -64,11 +65,13 @@ assets/img|video|hero|brand   the shop's own photos and reels, processed (webp /
 
 Tap any pizza photo in the menu (it has a **3D** badge) to open it in 3D. On a phone, **📱 Ver en tu mesa** opens the camera and puts the pizza on the table at real size, with no app: Android uses Scene Viewer/WebXR and iPhone uses Quick Look. On a computer the viewer shows a QR code that opens the same pizza on the phone.
 
-- Deep link per pizza: `https://ugospizzas.com/#ver-<id>` (e.g. `#ver-cheeseburguer`). Print it as a QR sticker for the tables.
-- Models are built from the menu photos. After changing a photo or the size, run `python3 tools/build-ar-models.py` (or pass ids: `… ugos mexicana`).
+- Deep link per pizza: `https://ugospizzas.com/?ver=<id>` (e.g. `?ver=cheeseburguer`; `#ver-<id>` also works). Print it as a QR sticker for the tables.
+- Models are built from the full-size menu photos in `tools/ar-src/`: crust rim with a rounded lip, cheese sunk inside, toppings raised, plus a normal map. After changing a photo or the size, run `pip install pillow numpy usd-core` then `python3 tools/build-ar-models.py` (or pass ids: `… ugos mexicana`). Each USDZ is checked with USD's validators.
+- `vercel.json` serves `.usdz` as `model/vnd.usdz+zip` (without it, iPhone downloads the file instead of opening AR).
+- WhatsApp/Instagram/Facebook/TikTok in-app browsers can't open AR. The button stays visible there and explains how to open the page in Chrome or Safari.
 - Size: the diameter is **assumed to be 36 cm** (`UGOS.ar.diameterCm` in `js/data.js`), because no size is published. Confirm it with the owner.
 - The viewer library ([model-viewer](https://modelviewer.dev), from jsDelivr) loads only when someone opens a pizza.
-- These are photo-based models (a textured disc), not photogrammetry scans. Toppings that stand up (the sausage border and cheddar volcano on the Ugo's) look flat. For scan-quality models, replace `assets/ar/<id>.glb` with a scanned `.glb` of the same name.
+- These are photo-based models, not photogrammetry scans. The shape is reconstructed from one photo, so the underside and the far side of tall toppings are inferred. For scan-quality models, replace `assets/ar/<id>.glb` with a scanned `.glb` of the same name.
 
 ## Updating promos
 
