@@ -215,7 +215,7 @@
     tabEl.innerHTML = tabs.map(([id, t], k) => `<button class="tab" type="button" role="tab" data-tab="${id}" aria-selected="${k === 0}">${t}</button>`).join("");
     function render(id) {
       const f = tabs.find((t) => t[0] === id)[2]; const rows = items.filter(f);
-      list.innerHTML = rows.map((it) => `<li class="mitem"><img class="mitem__img" src="${esc(it.img)}" alt="" width="76" height="76" loading="lazy">
+      list.innerHTML = rows.map((it) => `<li class="mitem"><button class="mitem__ar" type="button" data-ar="${esc(it.id)}" aria-label="Ver ${esc(it.name)} en 3D y en tu mesa"><img class="mitem__img" src="${esc(it.img)}" alt="" width="76" height="76" loading="lazy"><span class="mitem__3d">3D</span></button>
         <div><h3 class="mitem__name">${esc(it.name)}${it.star ? '<span class="tag">La más vendida</span>' : ""}${it.house ? '<span class="tag tag--house">De la casa</span>' : ""}${it.veg ? '<span class="tag tag--veg">Sin carne</span>' : ""}${yapaOn && U.yapa.ref === it.id ? '<span class="tag">Bs 35 x Scoobyneta</span>' : ""}</h3><p class="mitem__desc">${esc(short(it.desc))}</p></div>
         <div class="mitem__side"><span class="mitem__price">${money(it.price)}</span><button class="plus" type="button" data-add="${esc(it.id)}" aria-label="Agregar ${esc(it.name)}">${icon("plus")}</button></div></li>`).join("");
       list.classList.add("is-collapsed");

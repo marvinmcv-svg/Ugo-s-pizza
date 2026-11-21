@@ -246,6 +246,7 @@
         <p class="sub">Más de 20 sabores. Todas con masa madre, salsa de tomate a la leña y mozzarella.</p>
       </div>
       <div class="coins reveal js-coins"></div>
+      <p class="arnote"><b>3D</b>Tocá la foto de una pizza para verla en 3D o en tu mesa, a tamaño real.</p>
       <div class="tabs" role="tablist" aria-label="Filtrar el menú"></div>
       <ul class="mlist is-collapsed js-mlist" aria-live="polite"></ul>
       <button class="btn btn--outline mmore js-mmore" type="button">Ver todas ↓</button>
@@ -476,9 +477,36 @@
   <a class="btn btn--mustard" href="#pedido">Pedir por WhatsApp →</a>
 </div>
 
+<!-- AR / 3D menu: see the pizza at real size on your table -->
+<dialog class="arv" id="arv" aria-labelledby="arv-t">
+  <div class="arv__head">
+    <div><p class="eyebrow">Menú en 3D · tamaño real</p><h2 id="arv-t" class="arv__name js-arv-name"></h2></div>
+    <button class="xbtn js-arv-x" type="button" aria-label="Cerrar"><svg><use href="#i-x"/></svg></button>
+  </div>
+  <div class="arv__stage">
+    <div class="js-arv-mv arv__mv"></div>
+    <button class="arv__nav arv__nav--prev js-arv-prev" type="button" aria-label="Pizza anterior">‹</button>
+    <button class="arv__nav arv__nav--next js-arv-next" type="button" aria-label="Pizza siguiente">›</button>
+    <p class="arv__hint js-arv-hint">Girala con el dedo · pellizcá para acercar</p>
+  </div>
+  <div class="arv__body">
+    <p class="arv__desc js-arv-desc"></p>
+    <div class="arv__qr js-arv-qr" hidden>
+      <div class="arv__qrimg js-arv-qrimg" role="img" aria-label="Código QR para ver esta pizza en tu celular"></div>
+      <p><b>Mirala en tu mesa.</b><br>Escaneá con la cámara del celular y tocá “Ver en tu mesa”. No hace falta instalar nada.</p>
+    </div>
+    <div class="arv__foot">
+      <span class="arv__price js-arv-price"></span>
+      <button class="btn btn--mustard js-arv-ar" type="button" hidden>📱 Ver en tu mesa</button>
+      <button class="btn btn--red js-arv-add" type="button" data-add="">Agregar al pedido</button>
+    </div>
+  </div>
+</dialog>
+
 <div class="toast" role="status" aria-live="polite"></div>
 
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/ar.js"></script>
 </body>
 </html>

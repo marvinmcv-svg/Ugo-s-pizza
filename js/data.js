@@ -47,6 +47,12 @@
     // graphics say "8 porciones · tamaño familiar" [WEB-HOME]. Not asserted for the menu.
     sizes: {},
 
+    // AR / 3D menu ("Vela en tu mesa"): one real-size model per pizza in assets/ar/<id>.glb,
+    // built from the menu photos by tools/build-ar-models.py. The diameter is NOT published:
+    // 36 cm is an assumed "tamaño familiar" so the pizza looks right on the table.
+    // Confirm with the owner, change it here, and re-run the script.
+    ar: { diameterCm: 36, dir: "assets/ar/" },
+
     // [WEB-MENU] https://ugospizzas.com/menu/ — 18 pizzas, exact text and prices.
     // veg = sin carne (has no meat/fish in the published ingredients).
     menu: [

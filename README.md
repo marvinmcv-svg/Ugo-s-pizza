@@ -38,6 +38,9 @@ api/_tools.js       deterministic tools (menu, cart, deals, order, handoff) + JS
 api/_prompt.js      system prompt + live context (time, open branches, promo, customer state)
 api/_persona.js     HermosIA's original lines + easter eggs
 tests/tools.test.js golden tests (node:test, fixed clock)
+js/ar.js            AR / 3D menu: tap a pizza photo → 3D viewer → "Ver en tu mesa" (real size, phone camera)
+assets/ar/*.glb     one real-size 3D model per pizza, built from the photos
+tools/build-ar-models.py   regenerates assets/ar/ (python3, pillow, numpy)
 assets/img|video|hero|brand   the shop's own photos and reels, processed (webp / H.264)
 ```
 
@@ -56,6 +59,16 @@ assets/img|video|hero|brand   the shop's own photos and reels, processed (webp /
 ### NDJSON events
 
 `text` · `cart` · `options` · `readback` · `location` · `order` · `handoff` · `state` · `error`
+
+## AR menu ("Ver en tu mesa")
+
+Tap any pizza photo in the menu (it has a **3D** badge) to open it in 3D. On a phone, **📱 Ver en tu mesa** opens the camera and puts the pizza on the table at real size, with no app: Android uses Scene Viewer/WebXR and iPhone uses Quick Look. On a computer the viewer shows a QR code that opens the same pizza on the phone.
+
+- Deep link per pizza: `https://ugospizzas.com/#ver-<id>` (e.g. `#ver-cheeseburguer`). Print it as a QR sticker for the tables.
+- Models are built from the menu photos. After changing a photo or the size, run `python3 tools/build-ar-models.py` (or pass ids: `… ugos mexicana`).
+- Size: the diameter is **assumed to be 36 cm** (`UGOS.ar.diameterCm` in `js/data.js`), because no size is published. Confirm it with the owner.
+- The viewer library ([model-viewer](https://modelviewer.dev), from jsDelivr) loads only when someone opens a pizza.
+- These are photo-based models (a textured disc), not photogrammetry scans. Toppings that stand up (the sausage border and cheddar volcano on the Ugo's) look flat. For scan-quality models, replace `assets/ar/<id>.glb` with a scanned `.glb` of the same name.
 
 ## Updating promos
 
