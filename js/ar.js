@@ -71,7 +71,12 @@
     } else if (inApp && ios) {
       html = `<p><b>Esta app no deja abrir la cámara 3D.</b> Tocá <b>•••</b> o el ícono de compartir y elegí <b>“Abrir en Safari”</b>. O copiá el link y pegalo en Safari.</p><button class="btn btn--mustard js-arv-copy" type="button">Copiar link</button>`;
     } else if (android) {
-      html = `<p><b>No pudimos abrir la cámara 3D.</b> Tu celular necesita <b>Google Play Services para RA</b> (gratis). Si ya lo tenés, abrí la página en Chrome.</p><a class="btn btn--mustard" href="https://play.google.com/store/apps/details?id=com.google.ar.core" target="_blank" rel="noopener">Instalar desde Play Store</a>`;
+      // Scene Viewer bounced back. Offer the other way in (Google Play Services for AR) and a camera-free 3D view.
+      const file = new URL(U.ar.dir + it.id + ".glb", location.href).toString();
+      html = `<p><b>No se abrió la cámara 3D.</b> Probá de esta otra forma. Si tampoco abre, tu celular necesita <b>Servicios de Google Play para RA</b> (gratis) o no es compatible con realidad aumentada.</p>
+        <p class="arv__help-btns"><a class="btn btn--mustard" href="${sceneViewer(file, "ar_preferred", "com.google.ar.core", link)}">Probar otra vez</a>
+        <a class="btn btn--outline" href="${sceneViewer(file, "3d_only", "com.google.android.googlequicksearchbox", link)}">Verla en 3D</a>
+        <a class="btn btn--outline" href="https://play.google.com/store/apps/details?id=com.google.ar.core" target="_blank" rel="noopener">Play Store</a></p>`;
     } else if (ios) {
       html = `<p><b>No pudimos abrir la cámara 3D.</b> Abrí la página en <b>Safari</b> (iPhone con iOS 12 o más nuevo).</p><button class="btn btn--mustard js-arv-copy" type="button">Copiar link</button>`;
     } else {
@@ -85,6 +90,13 @@
     });
     help.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
+  function sceneViewer(file, mode, pkg, back) {
+    const ver = pkg === "com.google.ar.core" ? "1.0" : "1.2";
+    const q = "mode=" + mode + "&resizable=false&disable_occlusion=true&title=" + encodeURIComponent(items[cur].name) + "&file=" + encodeURIComponent(file);
+    return "intent://arvr.google.com/scene-viewer/" + ver + "?" + q + "#Intent;scheme=https;package=" + pkg +
+      ";action=android.intent.action.VIEW;S.browser_fallback_url=" + encodeURIComponent(back + "#ar-fallo") + ";end;";
+  }
+
   async function drawQR() {
     const it = items[cur]; const box = $(".js-arv-qrimg");
     try {
@@ -139,6 +151,7 @@
   });
   arBtn.addEventListener("click", () => {
     if (inApp || !mv || !mv.canActivateAR) { showHelp("unavailable"); return; }
+    try { sessionStorage.setItem("ugos_ar_last", items[cur].id); } catch (e) { /* storage unavailable */ }
     mv.activateAR();
   });
   // app.js adds to the cart (delegated [data-add]); the toast sits under the dialog, so confirm here.
@@ -146,11 +159,21 @@
 
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-ar]"); if (b) { e.preventDefault(); open(b.dataset.ar, b); } });
 
-  function fromLink() {
+  function fromLink(initial) {
+    // Back from a Scene Viewer that couldn't open (full page load): reopen that pizza and explain.
+    // (On a same-page return, model-viewer restores history itself and fires ar-status "failed".)
+    if (initial === true && /^#(model-viewer-no-ar-fallback|ar-fallo)$/.test(location.hash)) {
+      let last = null; try { last = sessionStorage.getItem("ugos_ar_last"); } catch (e) { /* noop */ }
+      const back = new URLSearchParams(location.search).get("ver") || last;
+      history.replaceState(null, "", location.pathname + location.search);
+      if (back && !dlg.open) open(back).then(() => showHelp("failed"));
+      return;
+    }
+    if (/^#(model-viewer-no-ar-fallback|ar-fallo)$/.test(location.hash)) return;
     const m = /^#ver-([\w-]+)$/.exec(location.hash);
     const id = m ? m[1] : new URLSearchParams(location.search).get("ver");
     if (id && !dlg.open) open(id);
   }
-  window.addEventListener("hashchange", fromLink);
-  fromLink();
+  window.addEventListener("hashchange", () => fromLink(false));
+  fromLink(true);
 })();

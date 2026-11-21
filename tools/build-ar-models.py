@@ -43,7 +43,7 @@ SRC = ROOT / "tools" / "ar-src"
 DIAMETER_M = float(re.search(r"diameterCm:\s*([\d.]+)", (ROOT / "js" / "data.js").read_text()).group(1)) / 100
 R = DIAMETER_M / 2
 TEX = 1024           # top colour / normal / height maps
-SIDE_W, SIDE_H = 1024, 192
+SIDE_W, SIDE_H = 1024, 256          # power-of-two everywhere: safest for Scene Viewer / Quick Look
 RINGS_IN, RINGS_RIM, SEGS = 36, 52, 192
 # Pizzas with a centre "volcano" cup (Ugo's: "volcán de crema de queso cheddar").
 VOLCANO = {"ugos"}
@@ -245,7 +245,13 @@ def build_mesh(coarse, crust_rgb):
                 idx += [a, d, c]          # centre ring is a single point: one triangle per segment
             else:
                 idx += [a, b, c, b, d, c]
-    top = {"pos": pos.reshape(-1, 3), "nrm": nrm.reshape(-1, 3), "uv": uv.reshape(-1, 2), "idx": np.array(idx)}
+    # Tangents for the normal map: u runs along +x; w=+1 makes the bitangent point to image-top (-z),
+    # matching the normal map's +G (glTF: bitangent = cross(normal, tangent) * w).
+    n2 = nrm.reshape(-1, 3)
+    t = np.array([1.0, 0, 0]) - n2 * n2[:, :1]
+    t /= np.linalg.norm(t, axis=1, keepdims=True)
+    top = {"pos": pos.reshape(-1, 3), "nrm": n2, "uv": uv.reshape(-1, 2), "idx": np.array(idx),
+           "tan": np.concatenate([t, np.ones((len(t), 1))], 1)}
     top["idx"] = fix_winding(top["pos"], top["idx"], lambda p: np.array([0, 1, 0]))
 
     # Outer wall: from the lip edge down to the base, tucking in slightly at the bottom.
@@ -314,6 +320,8 @@ def write_glb(path, name, prims, images, materials):
         attrs = {"POSITION": acc(p["pos"].astype(np.float32), 5126, "VEC3", 34962, True),
                  "NORMAL": acc(p["nrm"].astype(np.float32), 5126, "VEC3", 34962),
                  "TEXCOORD_0": acc(p["uv"].astype(np.float32), 5126, "VEC2", 34962)}
+        if "tan" in p:
+            attrs["TANGENT"] = acc(p["tan"].astype(np.float32), 5126, "VEC4", 34962)
         big = p["pos"].shape[0] > 65535
         ind = acc(p["idx"].astype(np.uint32 if big else np.uint16), 5125 if big else 5123, "SCALAR", 34963)
         gprims.append({"attributes": attrs, "indices": ind, "material": mat})

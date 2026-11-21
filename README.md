@@ -42,6 +42,9 @@ js/ar.js            AR / 3D menu: tap a pizza photo → 3D viewer → "Ver en tu
 assets/ar/*.glb|usdz  one real-size 3D model per pizza (GLB for Android/viewer, USDZ for iPhone)
 tools/build-ar-models.py   regenerates assets/ar/ (python3, pillow, numpy, usd-core)
 tools/ar-src/       full-size menu photos from ugospizzas.com/menu (model source)
+tools/build-table-qr.py    makes qr-mesas.html + print/qr-mesas.pdf (table QR cards; pip install qrcode)
+qr-mesas.html       printable table QR cards, one per pizza (/qr-mesas.html)
+ar-test.html        AR troubleshooting page for phones (/ar-test.html)
 assets/img|video|hero|brand   the shop's own photos and reels, processed (webp / H.264)
 ```
 
@@ -67,6 +70,8 @@ Tap any pizza photo in the menu (it has a **3D** badge) to open it in 3D. On a p
 
 - Deep link per pizza: `https://ugospizzas.com/?ver=<id>` (e.g. `?ver=cheeseburguer`; `#ver-<id>` also works). Print it as a QR sticker for the tables.
 - Models are built from the full-size menu photos in `tools/ar-src/`: crust rim with a rounded lip, cheese sunk inside, toppings raised, plus a normal map. After changing a photo or the size, run `pip install pillow numpy usd-core` then `python3 tools/build-ar-models.py` (or pass ids: `… ugos mexicana`). Each USDZ is checked with USD's validators.
+- Table QR cards: `print/qr-mesas.pdf` (A4, 6 per page) or open `/qr-mesas.html` and print. They point to `https://ugos-pizza.vercel.app/?ver=<id>`; if the site moves to ugospizzas.com, change `SITE` in `tools/build-table-qr.py` and re-run it.
+- If "Ver en tu mesa" bounces back on an Android phone, open `/ar-test.html` in Chrome on that phone: it launches Scene Viewer with Google's sample model, our model in AR, our model in 3D only, and via Google Play Services for AR, so you can tell a phone problem from a file problem.
 - `vercel.json` serves `.usdz` as `model/vnd.usdz+zip` (without it, iPhone downloads the file instead of opening AR).
 - WhatsApp/Instagram/Facebook/TikTok in-app browsers can't open AR. The button stays visible there and explains how to open the page in Chrome or Safari.
 - Size: the diameter is **assumed to be 36 cm** (`UGOS.ar.diameterCm` in `js/data.js`), because no size is published. Confirm it with the owner.
