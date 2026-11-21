@@ -165,7 +165,7 @@ def height_field(pid, top, side, crust, H):
     # and the inner crust wall with the real crust from the side texture, wrapped round by angle.
     if pid not in WIDE_RIM:
         phi = np.mod(np.arctan2(v, u), 2 * math.pi)
-        r0 = rim_in - 0.045
+        r0 = rim_in - 0.015
         tt = np.clip((r - r0) / (1 - r0), 0, 1)
         lipcol = bilinear(side, phi / (2 * math.pi) * SIDE_W - 0.5, (0.08 + 0.5 * np.abs(tt - 0.45)) * SIDE_H)
         k = smoothstep(r0, rim_in - 0.01, r)[..., None]
@@ -174,11 +174,13 @@ def height_field(pid, top, side, crust, H):
         top = top * (1 - 0.18 * smoothstep(0.93, 1.0, r))[..., None]
         crusty = np.where(r > rim_in, 0.6, crusty)
 
-    cheese_lvl, lip_top, lip_edge = 0.55 * H, 1.0 * H, 0.84 * H
-    wall = smoothstep(rim_in - 0.05, rim_in + 0.015, r)          # inner crust wall
+    # Cheese and toppings sit ABOVE the crust; the crust rim is lower and rounds off at the edge.
+    cheese_lvl, lip_top, lip_edge = 1.0 * H, 0.86 * H, 0.70 * H
+    wall = smoothstep(rim_in - 0.03, rim_in + 0.03, r)           # cheese edge melting down onto the crust
     rmid = (rim_in + 1) / 2
     lip = lip_top - (lip_top - lip_edge) * np.clip((r - rmid) / (1 - rmid), 0, 1) ** 2
     base = cheese_lvl + (lip - cheese_lvl) * wall
+    base += (1 - wall) * 0.003 * (1 - (r / rim_in) ** 2).clip(0)   # slight dome in the middle
     # Lumpy crust: lift where the rim really is crust-coloured (also shapes Ugo's sausage border).
     base += wall * (blur(crusty, 5.0) - 0.6) * 0.14 * H
 
@@ -187,7 +189,7 @@ def height_field(pid, top, side, crust, H):
     cheese = np.median(top[inside], axis=0)
     d_cheese = np.linalg.norm(top - cheese, axis=-1) / 255
     topping = blur(np.clip((d_cheese - 0.12) / 0.30, 0, 1), 5.0)
-    base += (1 - wall) * topping * 0.0035
+    base += (1 - wall) * topping * 0.007
 
     if pid in VOLCANO:
         # Centre cup: find the crust-coloured blob near the middle.
@@ -199,7 +201,7 @@ def height_field(pid, top, side, crust, H):
             rc = np.sqrt((u - cu) ** 2 + (v - cv) ** 2) / ro
             cup = smoothstep(1.15, 0.85, rc)                 # outer wall
             bowl = smoothstep(0.55, 0.35, rc)                # cheddar sits a little lower
-            base = base * (1 - cup) + cup * (cheese_lvl + 0.032 - bowl * 0.008)
+            base = base * (1 - cup) + cup * (cheese_lvl + 0.025 - bowl * 0.008)
 
     coarse = blur(base, 3.0)
     # Fine detail for the normal map only: luminance high-pass (bubbles, edges of toppings).
